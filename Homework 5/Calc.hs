@@ -2,6 +2,7 @@ module Calc where
 
 import ExprT
 import Parser
+import qualified StackVM as Stack
 
 class Expr a where
     lit :: Integer -> a
@@ -46,3 +47,11 @@ testMM = testExp
 
 testSat :: Maybe Mod7
 testSat = testExp
+
+instance Expr Stack.Program where
+  lit n = [Stack.PushI n]
+  add l1 l2 = l1 ++ l2 ++ [Stack.Add]
+  mul l1 l2 = l1 ++ l2 ++ [Stack.Mul]
+
+compile :: String -> Maybe Stack.Program
+compile = parseExp lit add mul
