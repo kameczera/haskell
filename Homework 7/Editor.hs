@@ -1,4 +1,6 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, ScopedTypeVariables#-}
+{-# LANGUAGE GeneralizedNewtypeDeriving
+           , ScopedTypeVariables
+   #-}
 module Editor where
 
 import System.IO
@@ -8,7 +10,7 @@ import Buffer
 import Control.Exception
 import Control.Monad.State
 
-import Control.Applicative
+{-import Control.Applicative-}
 import Control.Arrow       (first, second)
 
 import Data.Char
@@ -31,6 +33,9 @@ commands :: [String]
 commands = map show [View, Edit, Next, Prev, Quit]
 
 -- Editor monad
+instance Applicative (Editor b) where
+    pure = return
+    (<*>) = ap
 
 newtype Editor b a = Editor (StateT (b,Int) IO a)
   deriving (Functor, Monad, MonadIO, MonadState (b,Int))
