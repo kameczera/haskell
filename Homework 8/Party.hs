@@ -19,3 +19,33 @@ instance Monoid GuestList where
 
 instance Semigroup GuestList where
   (<>) (GL employeeList1 totalFun1) (GL employeeList2 totalFun2) = (GL (employeeList1 ++ employeeList2) (totalFun1 + totalFun2))
+
+combineGLs :: Employee -> [GuestList] -> GuestList
+combineGLs emp gls =
+  let justEmp = GL [emp] (empFun emp)
+  in case gls of
+    [] -> justEmp
+    _  -> moreFun justEmp (foldr mappend mempty gls)
+
+nextLevel :: Employee -> [(GuestList, GuestList)] -> (GuestList, GuestList)
+nextLevel emp gls = (glCons emp mempty, mostFunGL gls)
+    where
+        funGLs []           = []
+        funGLs ((e,g):gls') = moreFun e g : funGLs gls'
+        mostFunGL gls'      = foldr moreFun mempty (funGLs gls')
+
+maxFun :: Tree Employee -> GuestList
+maxFun tree = moreFun (fst result) (snd result)
+  where
+    maxFun' (Node emp [])   = (glCons emp mempty, mempty)
+    maxFun' (Node emp frst) = nextLevel emp (map maxFun' frst)
+    result = maxFun' tree
+
+main :: IO ()
+main = do str <- readFile "./company.txt" 
+          let gl = maxFun (read str)
+              getFun (GL _ fun) = fun
+              getEmps (GL emps _) = emps
+              names = map empName (getEmps gl)
+          putStrLn ("Total fun: " ++ show (getFun gl))
+          mapM_ putStrLn names
